@@ -169,3 +169,85 @@ $Tổng\_nợ = Gốc \times (1 + 0.5\%)^{Số\_ngày\_quá\_hạn}$
 Khi chạy, Kết quả sẽ thấy ở cửa sổ kết quả hiện ra danh sách các món đồ. Món nào có chữ "CÓ THỂ TRẢ" thì có thể báo khách lấy về.
 
 4. Event 4: Truy vấn danh sách nợ xấu (Nợ khó đòi)
+
+* Script truy vấn danh sách nợ xấu
+
+Tạo một View (để dùng như một bảng báo cáo động) hoặc một Stored Procedure. Ở đây mình sẽ viết một câu lệnh SELECT chi tiết, bạn có thể chạy nó bất cứ khi nào cần báo cáo
+
+<img width="1920" height="1080" alt="1  Script truy vấn danh sách nợ xấu" src="https://github.com/user-attachments/assets/4292c541-41e6-4103-b605-c1173f0b041a" />
+
+* Giải thích các thành phần
+
+  * Số ngày quá hạn: Sử dụng hàm DATEDIFF(DAY, hd.Deadline1, GETDATE()). Con số này càng lớn thì tiền lãi kép càng tăng khủng khiếp.
+
+  * Tổng nợ hiện tại: Gọi hàm fn_CalcMoneyContract với tham số là GETDATE() (ngày hôm nay). Hàm này tự động nhận diện đã qua Deadline 1 nên sẽ tính toán theo công thức lãi kép.
+
+  * Tổng nợ sau 1 tháng: Đây là phần "dự báo". Chúng ta sử dụng hàm DATEADD(MONTH, 1, GETDATE()) để truyền vào hàm tính tiền. Kết quả trả về sẽ giúp chủ tiệm thấy được sự chênh lệch (lãi sinh ra) trong 30 ngày tới.
+
+  * Hàm FORMAT(..., 'N0'): Giúp định dạng con số tiền tệ có dấu phẩy ngăn cách hàng nghìn (ví dụ: 10,000,000) để báo cáo dễ đọc hơn.
+ 
+* Kiểm tra dữ liệu (Sample Data)
+
+<img width="1920" height="1080" alt="2  kiểm tra dữ liệu (Sample Data)" src="https://github.com/user-attachments/assets/190da3aa-0577-4688-9c66-136b3ee94faf" />
+
+5. Event 5: Quản lý thanh lý tài sản
+
+* Trigger tự động chuyển sang "Quá hạn (nợ xấu)"
+
+Trigger này sẽ chạy mỗi khi bảng HopDong được cập nhật hoặc chèn mới. Nếu ngày hiện tại vượt quá Deadline 1, trạng thái sẽ tự đổi.
+ 
+<img width="1950" height="1080" alt="1  Trigger tự động chuyển sang Quá hạn" src="https://github.com/user-attachments/assets/1d2873d7-8b8b-465b-b6e9-e2ef3d21ee1f" />
+
+* Trigger tự động chuyển tài sản sang "Sẵn sàng thanh lý"
+
+Khi trạng thái hợp đồng đã là "Quá hạn (nợ xấu)" và thời gian vượt quá Deadline 2, tài sản liên quan sẽ tự động chuyển sang trạng thái chờ bán.
+
+<img width="1920" height="1080" alt="2  Trigger tự động chuyển tài sản sang Sẵn sàng thanh lý" src="https://github.com/user-attachments/assets/6cc8ed64-7a1f-4a1a-bc5e-e10311c9f770" />
+
+* Trigger tự động chuyển tài sản thành "Đã bán thanh lý"
+
+Khi nhân viên xác nhận hợp đồng này "Đã thanh lý" (nghĩa là tiệm đã bán xong đồ để thu hồi vốn), Trigger sẽ tự động cập nhật cờ IsSold và trạng thái từng món đồ.
+
+<img width="1920" height="1080" alt="3  Trigger tự động chuyển tài sản thành Đã bán thanh lý" src="https://github.com/user-attachments/assets/160a86a1-ae67-4042-adbf-a01b1b0daf7d" />
+
+* Chạy Thử Nghiệm
+
+  * Bước 1: Tạo dữ liệu mẫu (Khách hàng, Hợp đồng, Tài sản)
+
+<img width="1920" height="1080" alt="4  Bước 1 Tạo dữ liệu mẫu (Khách hàng, Hợp đồng, Tài sản)" src="https://github.com/user-attachments/assets/1e81c5cb-13df-4d6f-8f96-5bc573db83fa" />
+
+  * Bước 2: Kiểm tra Trigger Tự động chuyển Nợ xấu & Sẵn sàng thanh lý
+  
+<img width="1920" height="1080" alt="5  BƯỚC 2 Kiểm tra Trigger Tự động chuyển Nợ xấu   Sẵn sàng thanh lý" src="https://github.com/user-attachments/assets/0fbe3166-08e5-415a-9ef8-139bcd7a604a" />
+
+  * Bước 3 Kiểm tra Trigger Xác nhận đã bán thanh lý
+
+<img width="1920" height="1080" alt="6  BƯỚC 3 Kiểm tra Trigger Xác nhận đã bán thanh lý" src="https://github.com/user-attachments/assets/064ff600-c6c0-49cd-9eb9-5c8e1cb02fc5" />
+
+* Giải Thích
+
+  * Cơ chế "Đánh thức" (Triggering)
+Thuật toán không chạy liên tục mà chỉ "thức dậy" khi có một hành động INSERT hoặc UPDATE tác động vào bảng HopDong.
+
+    * Điều này giúp tiết kiệm tài nguyên hệ thống, chỉ xử lý khi dữ liệu có sự thay đổi.
+
+  * Logic chuyển đổi tầng 1: Nợ xấu
+Điều kiện: Ngày hiện tại (GETDATE()) vượt quá mốc Deadline1.
+
+    * Hành động: Trigger trg_TuDongChuyenNoXau tự động đổi trạng thái hợp đồng thành 'Quá hạn'.
+
+    * Mục đích: Chốt sổ lãi đơn và bắt đầu áp dụng công thức lãi kép cho giai đoạn tiếp theo.
+
+  * Logic chuyển đổi tầng 2: Thanh lý tài sản
+Điều kiện: Trạng thái hợp đồng là 'Quá hạn' và ngày hiện tại đã vượt quá mốc Deadline2.
+
+    * Hành động: Trigger trg_TaiSanSanSangThanhLy tác động sang bảng TaiSan, chuyển TrangThaiTS thành 'Sẵn sàng thanh lý'.
+
+    * Mục đích: Thông báo cho chủ tiệm rằng món đồ này đã đủ điều kiện pháp lý để đem bán thu hồi vốn.
+
+  * Logic kết thúc: Đồng bộ hóa bán hàng
+Điều kiện: Khi chủ tiệm xác nhận đã bán được tài sản bằng cách cập nhật trạng thái hợp đồng thành 'Đã thanh lý'.
+
+    * Hành động: Trigger trg_XacNhanDaBanThanhLy tự động bật cờ IsSold = 1 cho tất cả tài sản liên quan.
+
+    * Mục đích: Đảm bảo kho hàng luôn chính xác và không bán nhầm một món đồ đã bán rồi.
