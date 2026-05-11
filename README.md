@@ -15,13 +15,13 @@
 
 2. Tạo ít nhất 4 bảng có quan hệ với nhau :
 
-* Tạo bảng [HopDong].
-
-<img width="1920" height="1080" alt="3  Bảng Hợp Đồng" src="https://github.com/user-attachments/assets/a2344d8b-95d8-44bc-93fa-22ce5d01973e" />
-
 * Tạo bảng [KhachHang].
 
 <img width="1920" height="1080" alt="4  Bảng Khách Hàng" src="https://github.com/user-attachments/assets/003b3d72-5df6-4612-a99b-a5f63a62e234" />
+
+* Tạo bảng [HopDong].
+
+<img width="1920" height="1080" alt="3  Bảng Hợp Đồng" src="https://github.com/user-attachments/assets/a2344d8b-95d8-44bc-93fa-22ce5d01973e" />
 
 * Tạo bảng [TaiSan].
 
