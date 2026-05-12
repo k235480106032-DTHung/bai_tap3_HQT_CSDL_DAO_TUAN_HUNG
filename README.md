@@ -43,7 +43,7 @@
 
   * 2NF: Mọi thuộc tính không khóa đều phụ thuộc hoàn toàn vào khóa chính (MaKH, MaHD, MaTS).
 
-  * 3NF: Loại bỏ các phụ thuộc bắc cầu. Ví dụ: Giá trị lãi suất không lưu cứng mà được tính toán thông qua hàm để đảm bảo tính nhất quán khi thời gian thay đổi.
+  * 3NF: Loại bỏ các phụ thuộc bắc cầu. (Ví dụ: Giá trị lãi suất không lưu cứng mà được tính toán thông qua hàm để đảm bảo tính nhất quán khi thời gian thay đổi).
  
 * Bảng Chuẩn hóa đơn nhập:
 
